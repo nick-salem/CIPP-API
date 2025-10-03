@@ -12,12 +12,12 @@ function Invoke-EditUser {
 
     $APIName = $Request.Params.CIPPEndpoint
     $Headers = $Request.Headers
-    Write-LogMessage -headers $Headers -API $APIName -message 'Accessed this API' -Sev 'Debug'
+
 
     $UserObj = $Request.Body
     if ([string]::IsNullOrWhiteSpace($UserObj.id)) {
         $body = @{'Results' = @('Failed to edit user. No user ID provided') }
-        Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        return ([HttpResponseContext]@{
                 StatusCode = [HttpStatusCode]::BadRequest
                 Body       = $Body
             })
@@ -61,10 +61,17 @@ function Invoke-EditUser {
         }
         if ($UserObj.defaultAttributes) {
             $UserObj.defaultAttributes | Get-Member -MemberType NoteProperty | ForEach-Object {
-                Write-Host "Editing user and adding $($_.Name) with value $($UserObj.defaultAttributes.$($_.Name).value)"
                 if (-not [string]::IsNullOrWhiteSpace($UserObj.defaultAttributes.$($_.Name).value)) {
-                    Write-Host 'adding body to ship'
+                    Write-Host "Editing user and adding $($_.Name) with value $($UserObj.defaultAttributes.$($_.Name).value)"
                     $BodyToShip | Add-Member -NotePropertyName $_.Name -NotePropertyValue $UserObj.defaultAttributes.$($_.Name).value -Force
+                }
+            }
+        }
+        if ($UserObj.customData) {
+            $UserObj.customData | Get-Member -MemberType NoteProperty | ForEach-Object {
+                if (-not [string]::IsNullOrWhiteSpace($UserObj.customData.$($_.Name))) {
+                    Write-Host "Editing user and adding custom data $($_.Name) with value $($UserObj.customData.$($_.Name))"
+                    $BodyToShip | Add-Member -NotePropertyName $_.Name -NotePropertyValue $UserObj.customData.$($_.Name) -Force
                 }
             }
         }
@@ -235,7 +242,7 @@ function Invoke-EditUser {
     }
 
     # Associate values to output bindings by calling 'Push-OutputBinding'.
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+    return ([HttpResponseContext]@{
             StatusCode = [HttpStatusCode]::OK
             Body       = @{'Results' = @($Results) }
         })

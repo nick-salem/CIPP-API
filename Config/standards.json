@@ -965,10 +965,18 @@
     "name": "standards.DisableGuests",
     "cat": "Entra (AAD) Standards",
     "tag": [],
-    "helpText": "Blocks login for guest users that have not logged in for 90 days",
-    "executiveText": "Automatically disables external guest accounts that haven't been used for 90 days, reducing security risks from dormant accounts while maintaining access for active external collaborators. This helps maintain a clean user directory and reduces potential attack vectors.",
-    "addedComponent": [],
-    "label": "Disable Guest accounts that have not logged on for 90 days",
+    "helpText": "Blocks login for guest users that have not logged in for a number of days",
+    "executiveText": "Automatically disables external guest accounts that haven't been used for a number of days, reducing security risks from dormant accounts while maintaining access for active external collaborators. This helps maintain a clean user directory and reduces potential attack vectors.",
+    "addedComponent": [
+      {
+        "type": "number",
+        "name": "standards.DisableGuests.days",
+        "required": true,
+        "defaultValue": 90,
+        "label": "Days of inactivity"
+      }
+    ],
+    "label": "Disable Guest accounts that have not logged on for a number of days",
     "impact": "Medium Impact",
     "impactColour": "warning",
     "addedDate": "2022-10-20",
@@ -3426,6 +3434,163 @@
     "impact": "Low Impact",
     "impactColour": "info",
     "addedDate": "2025-04-01",
+    "powershellEquivalent": "Graph API",
+    "recommendedBy": []
+  },
+    {
+    "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration",
+    "cat": "Intune Standards",
+    "tag": [],
+    "helpText": "Sets the Windows Hello for Business configuration during device enrollment.",
+    "executiveText": "Enables or disables Windows Hello for Business during device enrollment, enhancing security through biometric or PIN-based authentication methods. This ensures that devices meet corporate security standards while providing a user-friendly sign-in experience.",
+    "addedComponent": [
+      {
+        "type": "autoComplete",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.state",
+        "label": "Configure Windows Hello for Business",
+        "multiple": false,
+        "options": [
+          {
+            "label": "Not configured",
+            "value": "notConfigured"
+          },
+          {
+            "label": "Enabled",
+            "value": "enabled"
+          },
+          {
+            "label": "Disabled",
+            "value": "disabled"
+          }
+        ]
+      },
+      {
+        "type": "switch",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.securityDeviceRequired",
+        "label": "Use a Trusted Platform Module (TPM)",
+        "default": true
+      },
+      {
+        "type": "number",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.pinMinimumLength",
+        "label": "Minimum PIN length (4-127)",
+        "default": 4
+      },
+      {
+        "type": "number",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.pinMaximumLength",
+        "label": "Maximum PIN length (4-127)",
+        "default": 127
+      },
+      {
+        "type": "autoComplete",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.pinLowercaseCharactersUsage",
+        "label": "Lowercase letters in PIN",
+        "multiple": false,
+        "options": [
+          {
+            "label": "Not allowed",
+            "value": "disallowed"
+          },
+          {
+            "label": "Allowed",
+            "value": "allowed"
+          },
+          {
+            "label": "Required",
+            "value": "required"
+          }
+        ]
+      },
+      {
+        "type": "autoComplete",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.pinUppercaseCharactersUsage",
+        "label": "Uppercase letters in PIN",
+        "multiple": false,
+        "options": [
+          {
+            "label": "Not allowed",
+            "value": "disallowed"
+          },
+          {
+            "label": "Allowed",
+            "value": "allowed"
+          },
+          {
+            "label": "Required",
+            "value": "required"
+          }
+        ]
+      },
+      {
+        "type": "autoComplete",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.pinSpecialCharactersUsage",
+        "label": "Special characters in PIN",
+        "multiple": false,
+        "options": [
+          {
+            "label": "Not allowed",
+            "value": "disallowed"
+          },
+          {
+            "label": "Allowed",
+            "value": "allowed"
+          },
+          {
+            "label": "Required",
+            "value": "required"
+          }
+        ]
+      },
+      {
+        "type": "number",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.pinExpirationInDays",
+        "label": "PIN expiration (days) - 0 to disable",
+        "default": 0
+      },
+      {
+        "type": "number",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.pinPreviousBlockCount",
+        "label": "PIN history - 0 to disable",
+        "default": 0
+      },
+      {
+        "type": "switch",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.unlockWithBiometricsEnabled",
+        "label": "Allow biometric authentication",
+        "default": true
+      },
+      {
+        "type": "autoComplete",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.enhancedBiometricsState",
+        "label": "Use enhanced anti-spoofing when available",
+        "multiple": false,
+        "options": [
+          {
+            "label": "Not configured",
+            "value": "notConfigured"
+          },
+          {
+            "label": "Enabled",
+            "value": "enabled"
+          },
+          {
+            "label": "Disabled",
+            "value": "disabled"
+          }
+        ]
+      },
+      {
+        "type": "switch",
+        "name": "standards.EnrollmentWindowsHelloForBusinessConfiguration.remotePassportEnabled",
+        "label": "Allow phone sign-in",
+        "default": true
+      }
+    ],
+    "label": "Windows Hello for Business enrollment configuration",
+    "impact": "Low Impact",
+    "impactColour": "info",
+    "addedDate": "2025-09-25",
     "powershellEquivalent": "Graph API",
     "recommendedBy": []
   },
