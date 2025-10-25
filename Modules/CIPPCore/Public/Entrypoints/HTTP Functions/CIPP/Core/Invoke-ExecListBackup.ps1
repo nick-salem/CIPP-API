@@ -1,5 +1,3 @@
-using namespace System.Net
-
 function Invoke-ExecListBackup {
     <#
     .FUNCTIONALITY
@@ -9,11 +7,6 @@ function Invoke-ExecListBackup {
     #>
     [CmdletBinding()]
     param($Request, $TriggerMetadata)
-
-    $APIName = $Request.Params.CIPPEndpoint
-    $Headers = $Request.Headers
-    Write-LogMessage -headers $Headers -API $APIName -message 'Accessed this API' -Sev 'Debug'
-
     $Type = $Request.Query.Type
     $TenantFilter = $Request.Query.tenantFilter
     $NameOnly = $Request.Query.NameOnly
@@ -37,7 +30,7 @@ function Invoke-ExecListBackup {
         }
         $Result = $Processed | Sort-Object Timestamp -Descending
     }
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+    return ([HttpResponseContext]@{
             StatusCode = [HttpStatusCode]::OK
             Body       = @($Result)
         })

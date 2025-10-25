@@ -1,5 +1,3 @@
-using namespace System.Net
-
 function Invoke-PublicPhishingCheck {
     <#
     .FUNCTIONALITY
@@ -40,9 +38,8 @@ function Invoke-PublicPhishingCheck {
         #Write-AlertMessage -message $Message -sev 'Alert' -tenant $Tenant.customerId -LogData $Request.body
     }
 
-    # Associate values to output bindings by calling 'Push-OutputBinding'.
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+    return [HttpResponseContext]@{
             StatusCode = [HttpStatusCode]::OK
             Body       = 'OK'
-        })
+        }
 }
