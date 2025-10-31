@@ -1,5 +1,3 @@
-using namespace System.Net
-
 function Invoke-ListCheckExtAlerts {
     <#
     .FUNCTIONALITY
@@ -29,9 +27,8 @@ function Invoke-ListCheckExtAlerts {
         $Alerts = @()
     }
 
-    # Associate values to output bindings by calling 'Push-OutputBinding'.
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+    return [HttpResponseContext]@{
             StatusCode = [HttpStatusCode]::OK
             Body       = @($Alerts | Sort-Object -Property Timestamp -Descending)
-        })
+        }
 }
