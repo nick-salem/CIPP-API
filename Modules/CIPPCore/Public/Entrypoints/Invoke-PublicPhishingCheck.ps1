@@ -1,5 +1,3 @@
-using namespace System.Net
-
 function Invoke-PublicPhishingCheck {
     <#
     .FUNCTIONALITY
@@ -22,7 +20,7 @@ function Invoke-PublicPhishingCheck {
         $ID = (New-Guid).GUID
         $TableBody = @{
             RowKey                   = "$ID"
-            PartitionKey             = [string]$Tenant.defaultDomainName
+            PartitionKey             = 'CheckAlert'
             tenantFilter             = [string]$Tenant.defaultDomainName
             message                  = [string]$Message
             type                     = [string]$request.body.type
@@ -40,9 +38,8 @@ function Invoke-PublicPhishingCheck {
         #Write-AlertMessage -message $Message -sev 'Alert' -tenant $Tenant.customerId -LogData $Request.body
     }
 
-    # Associate values to output bindings by calling 'Push-OutputBinding'.
-    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
-            StatusCode = [HttpStatusCode]::OK
-            Body       = 'OK'
-        })
+    return [HttpResponseContext]@{
+        StatusCode = [HttpStatusCode]::OK
+        Body       = 'OK'
+    }
 }
