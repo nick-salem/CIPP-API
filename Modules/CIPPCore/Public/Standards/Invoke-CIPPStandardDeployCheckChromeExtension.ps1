@@ -13,15 +13,31 @@ function Invoke-CIPPStandardDeployCheckChromeExtension {
         CAT
             Intune Standards
         TAG
+        EXECUTIVETEXT
+            Automatically deploys the Check browser extension across all company devices with configurable security and branding settings, ensuring consistent security monitoring and compliance capabilities. This extension provides enhanced security features and monitoring tools that help protect against threats while maintaining user productivity.
         ADDEDCOMPONENT
+            {"type":"switch","name":"standards.DeployCheckChromeExtension.enableValidPageBadge","label":"Enable valid page badge","defaultValue":true}
+            {"type":"switch","name":"standards.DeployCheckChromeExtension.enablePageBlocking","label":"Enable page blocking","defaultValue":true}
+            {"type":"switch","name":"standards.DeployCheckChromeExtension.enableCippReporting","label":"Enable CIPP reporting","defaultValue":true}
+            {"type":"textField","name":"standards.DeployCheckChromeExtension.cippServerUrl","label":"CIPP Server URL","placeholder":"https://YOUR-CIPP-SERVER-URL","required":false}
+            {"type":"textField","name":"standards.DeployCheckChromeExtension.customRulesUrl","label":"Custom Rules URL","placeholder":"https://YOUR-CIPP-SERVER-URL/rules.json","required":false}
+            {"type":"number","name":"standards.DeployCheckChromeExtension.updateInterval","label":"Update interval (hours)","defaultValue":12}
+            {"type":"switch","name":"standards.DeployCheckChromeExtension.enableDebugLogging","label":"Enable debug logging","defaultValue":false}
+            {"type":"textField","name":"standards.DeployCheckChromeExtension.companyName","label":"Company Name","placeholder":"YOUR-COMPANY","required":false}
+            {"type":"textField","name":"standards.DeployCheckChromeExtension.productName","label":"Product Name","placeholder":"YOUR-PRODUCT-NAME","required":false}
+            {"type":"textField","name":"standards.DeployCheckChromeExtension.supportEmail","label":"Support Email","placeholder":"support@yourcompany.com","required":false}
+            {"type":"textField","name":"standards.DeployCheckChromeExtension.primaryColor","label":"Primary Color","placeholder":"#0044CC","required":false}
+            {"type":"textField","name":"standards.DeployCheckChromeExtension.logoUrl","label":"Logo URL","placeholder":"https://yourcompany.com/logo.png","required":false}
+            {"name":"AssignTo","label":"Who should this policy be assigned to?","type":"radio","options":[{"label":"Do not assign","value":"On"},{"label":"Assign to all users","value":"allLicensedUsers"},{"label":"Assign to all devices","value":"AllDevices"},{"label":"Assign to all users and devices","value":"AllDevicesAndUsers"},{"label":"Assign to Custom Group","value":"customGroup"}]}
+            {"type":"textField","required":false,"name":"customGroup","label":"Enter the custom group name if you selected 'Assign to Custom Group'. Wildcards are allowed."}
         IMPACT
             Low Impact
         ADDEDDATE
             2025-09-18
         POWERSHELLEQUIVALENT
-            Set-CIPPIntunePolicy -TemplateType 'Device'
+            New-GraphPostRequest -uri 'https://graph.microsoft.com/beta/deviceManagement/configurationPolicies'
         RECOMMENDEDBY
-            CIPP
+            "CIPP"
         UPDATECOMMENTBLOCK
             Run the Tools\Update-StandardsComments.ps1 script to update this comment block
     .LINK
@@ -49,13 +65,18 @@ function Invoke-CIPPStandardDeployCheckChromeExtension {
     $ChromePolicyName = 'Deploy Check Chrome Extension (Chrome)'
     $EdgePolicyName = 'Deploy Check Chrome Extension (Edge)'
 
+    # CIPP Url
+    $CippConfigTable = Get-CippTable -tablename Config
+    $CippConfig = Get-CIPPAzDataTableEntity @CippConfigTable -Filter "PartitionKey eq 'InstanceProperties' and RowKey eq 'CIPPURL'"
+    $CIPPURL = 'https://{0}' -f $CippConfig.Value
+
     # Get configuration values with defaults
     $ShowNotifications = $Settings.showNotifications ?? $true
     $EnableValidPageBadge = $Settings.enableValidPageBadge ?? $true
     $EnablePageBlocking = $Settings.enablePageBlocking ?? $true
     $EnableCippReporting = $Settings.enableCippReporting ?? $true
-    $CippServerUrl = $Settings.cippServerUrl
-    $CippTenantId = $Settings.cippTenantId
+    $CippServerUrl = $CIPPURL
+    $CippTenantId = $Tenant
     $CustomRulesUrl = $Settings.customRulesUrl
     $UpdateInterval = $Settings.updateInterval ?? 24
     $EnableDebugLogging = $Settings.enableDebugLogging ?? $false
@@ -196,7 +217,16 @@ function Invoke-CIPPStandardDeployCheckChromeExtension {
 
         if ($Settings.report -eq $true) {
             $StateIsCorrect = $ChromePolicyExists -and $EdgePolicyExists
-            Set-CIPPStandardsCompareField -FieldName 'standards.DeployCheckChromeExtension' -FieldValue $StateIsCorrect -TenantFilter $Tenant
+
+            $ExpectedValue = [PSCustomObject]@{
+                ChromePolicyDeployed = $true
+                EdgePolicyDeployed   = $true
+            }
+            $CurrentValue = [PSCustomObject]@{
+                ChromePolicyDeployed = $ChromePolicyExists
+                EdgePolicyDeployed   = $EdgePolicyExists
+            }
+            Set-CIPPStandardsCompareField -FieldName 'standards.DeployCheckChromeExtension' -CurrentValue $CurrentValue -ExpectedValue $ExpectedValue -TenantFilter $Tenant
             Add-CIPPBPAField -FieldName 'DeployCheckChromeExtension' -FieldValue $StateIsCorrect -StoreAs bool -Tenant $Tenant
         }
 
