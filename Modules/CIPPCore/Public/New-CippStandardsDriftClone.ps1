@@ -2,8 +2,7 @@ function New-CippStandardsDriftClone {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)][string]$TemplateId,
-        [Parameter(Mandatory)][switch]$UpgradeToDrift,
-        $Headers
+        [Parameter(Mandatory)][switch]$UpgradeToDrift
     )
 
     $Table = Get-CippTable -tablename 'templates'
@@ -24,15 +23,16 @@ function New-CippStandardsDriftClone {
                         if ($actions | Where-Object { $_.value -eq 'remediate' }) {
                             $prop.Value | Add-Member -MemberType NoteProperty -Name 'autoRemediate' -Value $true -Force
                         }
-                        $prop.Value.action = @(@{ 'label' = 'Report'; 'value' = 'Report' })
+                        # Set action to Report using add-member to avoid issues with readonly arrays
+                        $prop.Value | Add-Member -MemberType NoteProperty -Name 'action' -Value @(@{ 'label' = 'Report'; 'value' = 'Report' }) -Force
                     }
                 }
             }
             $Entity.JSON = "$(ConvertTo-Json -InputObject $data -Compress -Depth 100)"
             $Entity.RowKey = "$($data.GUID)"
             $Entity.GUID = $data.GUID
-            $update = Add-CIPPAzDataTableEntity @Table -Entity $Entity -Force
-            return 'Clone Completed successfully'
+            $null = Add-CIPPAzDataTableEntity @Table -Entity $Entity -Force
+            return "Created drift template '$($data.templateName)' ($($data.GUID)) from $TemplateId"
         } catch {
             return "Failed to Clone template to Drift Template: $_"
         }
