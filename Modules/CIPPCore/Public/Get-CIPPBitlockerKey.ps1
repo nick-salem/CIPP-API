@@ -1,20 +1,57 @@
+<#
+.SYNOPSIS
+    Retrieves BitLocker recovery keys for a managed device from Microsoft Graph API.
+
+.DESCRIPTION
+    This function queries the Microsoft Graph API to retrieve all BitLocker recovery keys
+    associated with a specified device. It handles cases where no key is found and provides appropriate
+    logging and error handling.
+.PARAMETER Device
+    The ID of the device for which to retrieve BitLocker recovery keys.
+
+.PARAMETER TenantFilter
+    The tenant ID to filter the request to the appropriate tenant.
+
+.PARAMETER APIName
+    The name of the API operation for logging purposes. Defaults to 'Get BitLocker key'.
+
+.PARAMETER Headers
+    The headers to include in the request, typically used for authentication and logging.
+
+.OUTPUTS
+    Array of PSCustomObject with properties:
+    - resultText: Formatted string containing the key ID and key value
+    - copyField: The raw key value
+    - keyId: The BitLocker recovery key ID
+    - state: Status of the operation ('success')
+
+    Or a string message if no keys are found.
+#>
 
 function Get-CIPPBitLockerKey {
     [CmdletBinding()]
     param (
-        $Device,
-        $TenantFilter,
-        $APIName = 'Get BitLocker key',
-        $Headers
+        [Parameter(Mandatory = $true)]
+        [string]$Device,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TenantFilter,
+
+        [Parameter(Mandatory = $false)]
+        [string]$APIName = 'Get BitLocker key',
+
+        [Parameter(Mandatory = $false)]
+        [object]$Headers
     )
 
     try {
-        $GraphRequest = New-GraphGetRequest -uri "https://graph.microsoft.com/v1.0/informationProtection/bitlocker/recoveryKeys?`$filter=deviceId eq '$($Device)'" -tenantid $TenantFilter |
+        $GraphRequest = New-GraphGetRequest -uri "https://graph.microsoft.com/v1.0/informationProtection/bitlocker/recoveryKeys?`$filter=deviceId eq '$Device'" -tenantid $TenantFilter -ErrorAction Stop |
             ForEach-Object {
-                $BitLockerKeyObject = (New-GraphGetRequest -uri "https://graph.microsoft.com/v1.0/informationProtection/bitlocker/recoveryKeys/$($_.id)?`$select=key" -tenantid $TenantFilter)
+                $BitLockerKeyObject = New-GraphGetRequest -uri "https://graph.microsoft.com/v1.0/informationProtection/bitlocker/recoveryKeys/$($_.id)?`$select=key" -tenantid $TenantFilter -ErrorAction Stop
                 [PSCustomObject]@{
                     resultText = "Id: $($_.id) Key: $($BitLockerKeyObject.key)"
                     copyField  = $BitLockerKeyObject.key
+                    keyId      = $_.id
                     state      = 'success'
                 }
             }
